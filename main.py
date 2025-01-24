@@ -1,5 +1,3 @@
-# main.py
-
 import cloudscraper
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -35,11 +33,15 @@ class DateFinderBackend:
 
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, 'html.parser')
-            # Assuming the exchange rate is within a specific HTML element
-            rate_element = soup.find('div', class_='exchange-rate')
-            if rate_element:
-                exchange_rate = rate_element.text.strip()
-                return exchange_rate
+            # Find the first <p> tag containing <strong> and check the third <strong> tag for "BCV"
+            p_tag = soup.find('p', text=lambda t: t and 'BCV' in t)
+            if p_tag:
+                strong_tags = p_tag.find_all('strong')
+                if len(strong_tags) >= 3:
+                    exchange_rate = strong_tags[2].text.strip()
+                    return exchange_rate
+                else:
+                    return "Rate not found"
             else:
                 return "Rate not found"
         else:
